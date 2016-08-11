@@ -25,7 +25,7 @@ class TagConfig(APIBase):
     
     @staticmethod
     def create(image_tag, code_branch = None, code_tag = None, 
-    branch_or_tag_name = None, is_breach = None, build_context_path = '/', dockerfile_location = '/', 
+    branch_or_tag_name = None, is_breach = None, build_context_path = '/', dockerfile_location = None, 
     is_active = False, build_cache_enabled = False, version_tagging = 0):
         '''
         根据参数创建一个TagConfig
@@ -46,6 +46,9 @@ class TagConfig(APIBase):
         if branch_or_tag_name is None:
             raise Exception('必须指定三者之一：code_branch、code_tag、branch_or_tag_name')
             
+        if not dockerfile_location:
+            dockerfile_location = build_context_path
+        
         if dockerfile_location.find(build_context_path) != 0:
             raise Exception('dockerfile_location 必须以 build_context_path 作为前缀')
             

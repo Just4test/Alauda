@@ -1,9 +1,10 @@
 # Alauda
 An simple python API for alauda.cn and alauda.io
+Only support python3
 Read docs: http://docs.alauda.cn/
 
 # Installation
-pip install just4alauda
+pip3 install just4alauda
 
 # Usage
 ``` python
