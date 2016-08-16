@@ -147,7 +147,6 @@ class Repository(APISimpleDataBase):
         if build_config:
             data['build_config'] = build_config.json_data
             data['full_description'] = full_description
-        
         print(__import__('json').dumps(data))
         r = alauda._request_helper('/v1/repositories/{namespace}', 'post', data)
         if r.status_code == 201:

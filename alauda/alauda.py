@@ -1,9 +1,11 @@
 import requests
 import json
 
+from .region import Region
 from .service import Service
 from .application import Application
 from .repository import Repository
+
 
 class Alauda:
     
@@ -96,6 +98,18 @@ class Alauda:
                 raise Exception('账户尚未激活')
         else:
             raise Exception('账户登入失败。请检查namespace和token是否匹配。')
+            
+        temp = {}
+        self._region_map = temp
+        self.regions = Region.list(self)
+        for region in self.regions:
+            temp[region.name] = region
+            temp[region.id] = region
+            
+    def get_region(self, name_or_id):
+        '用区域名字或者私有区id获取region'
+        return self._region_map.get(name_or_id)
+            
      
     def create_service(self, config):
         return Service.create(self, config)
@@ -103,14 +117,8 @@ class Alauda:
     def get_service(self, name, app_name = None):
         return Service.get(self, name, app_name)
     
-    def list_service(self, app_name = ''):
-        if app_name == None:
-            app_name = ''
+    def list_service(self, app_name = None):
         return Service.list(self, app_name)
-        
-    def list_all_service(self):
-        '列出所有服务，包括应用中的服务'
-        return Service.list(self, None)
         
     def delete_service(self, name, app_name = None):
         return Service.delete_service(self, name, app_name)

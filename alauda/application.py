@@ -4,12 +4,19 @@ class Application(APIBase):
     灵雀云应用
     '''
     
+    _aliasmap = {
+        'region_id': 'region',
+        'name':'app_name',
+    }
+    
+    _hideset = {'app_name', 'region'}
+    
     @classmethod
-    def create(cls, alauda, name, region = None, yml = None):
+    def create(cls, alauda, name, region_name = None, yml = None):
         url = '/v1/applications/{namespace}'
         data = {
            'app_name': name,
-           'region': region if region else alauda.default_region,
+           'region': region_name if region_name else alauda.default_region,
            'namespace': alauda.namespace,
         }
         if yml:
@@ -24,10 +31,13 @@ class Application(APIBase):
             raise Exception('发生了异常：\n{}\n{}'.format(r.status_code, r.text))
             
     @classmethod
-    def get(cls, alauda, name):
+    def get(cls, alauda, name, region_name = None):
+            
         url = '/v1/applications/{namespace}/{name}'.format(
             name = name, namespace = alauda.namespace)
-        r = alauda._request_helper(url, 'get')
+        #region_name可以为空字符串。这代表使用系统提供的所有region。
+        params = {'region': region_name if region_name != None else alauda.default_region}
+        r = alauda._request_helper(url, 'get', params = params)
         
         if 200 == r.status_code:
             return cls(alauda, r.json())
@@ -37,34 +47,34 @@ class Application(APIBase):
             raise Exception('发生了异常：\n{}\n{}'.format(r.status_code, r.text))
     
     @classmethod
-    def list(cls, alauda):
+    def list(cls, alauda, region_name = None):
         '列出应用'
-        url = '/v1/application/{namespace}'
-        r = alauda._request_helper(url, 'get')
+        url = '/v1/applications/{namespace}'
+        #region_name可以为空字符串。这代表使用系统提供的所有region。
+        params = {'region': region_name if region_name != None else alauda.default_region}
+        r = alauda._request_helper(url, 'get', params = params)
         
         if 200 == r.status_code:
             ret = []
-            for data in r.json()['results']:
+            for data in r.json():
                 ret.append(cls(alauda, data))
             return ret
         else:
+            print(url, params)
             raise Exception('发生了异常：\n{}\n{}'.format(r.status_code, r.text))
-       
-    
-    _aliasmap = {
-        'name':'app_name',
-    }
-    
-    _hideset = {'app_name'}
     
     def __init__(self, alauda, data):
         self._alauda = alauda
         super().__init__(data)
+        
+    @property
+    def region_name(self):
+        return self._alauda.get_region(self.region_id).name
     
     def _format_url(self, url = ''):
-        return '/v1/applications/{namespace}/{name}/{url}'.format(
-            name = self.name, url = url, namespace = self._alauda.namespace)
-        
+        return '/v1/applications/{namespace}/{name}/{url}?region={region}'.format(
+            name = self.name, url = url, namespace = self._alauda.namespace, region = self.region_name)
+
     @property
     def api_url(self):
         return self._format_url()

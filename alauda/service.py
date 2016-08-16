@@ -1,23 +1,25 @@
-from .apibase import APIBase
+from .apibase import APISimpleDataBase
 import yaml
 
 
-def format_url(alauda, name, app_name, url = ''):
-    ret = '/v1/services/{namespace}/{name}/{url}'.format(
-        name = name, url = url, namespace = alauda.namespace)
+def format_url(alauda, region_name, name, app_name, act = ''):
+    url = '/v1/services/{namespace}/{name}/{act}?region_name={region_name}'.format(
+        name = name, act = act, namespace = alauda.namespace,
+        region_name = region_name if region_name != None else alauda.default_region,
+        )
     if app_name is not None:
-        ret += '?application=' + app_name
-    return ret
+        url += '&application=' + app_name
+    return url
 
-class Service(APIBase):
+class Service(APISimpleDataBase):
     '''
     灵雀云服务
     '''
     
     _aliasmap = {
         'name':'service_name',
-        'app_name':'application',
-        'region_name':['region', 'name']
+        # 'app_name':'application',
+        # 'region_name':['region', 'name']
     }
     
     _hideset = {'service_name', 'application', 'app_name'}
@@ -36,41 +38,61 @@ class Service(APIBase):
             raise Exception('发生了异常：\n{}\n{}'.format(r.status_code, r.text))
             
     @classmethod
-    def get(cls, alauda, name, app_name = None):
-        url = format_url(alauda, name, app_name)
+    def get_data(cls, alauda, name, app_name = None, region_name = None):
+        url = format_url(alauda, region_name, name, app_name)
         r = alauda._request_helper(url, 'get')
         if 200 == r.status_code:
-            return cls(alauda, r.json())
+            return r.json()
         elif r.status_code == 404:
             return None
         else:
             raise '发生了异常：\n{}\n{}'.format(r.status_code, r.text)
+            
+    @classmethod
+    def get(cls, alauda, name, app_name = None, region_name = None):
+        data = cls.get_data_by_name(alauda, name, app_name, region_name)
+        if data is None:
+            return None
+        return cls(alauda, data)
     
     @classmethod
-    def list(cls, alauda, app_name = None):
+    def list(cls, alauda, app_name = None, region_name = None):
         '''
         列出服务
-        app_name传入None，返回所有服务
-        app_name传入''，返回不在任何应用中的服务
-        app_name传入应用名，返回该应用中的服务。
         '''
-        url = '/v1/services/{namespace}/'.format(namespace = alauda.namespace)
+        # 获取应用中的服务：
         if app_name:
-            url += '?application=' + app_name
+            url = '/v1/applications/{namespace}/{app_name}?region_name={region_name}'.format(
+                namespace = alauda.namespace,app_name = app_name, 
+                region_name = region_name if region_name != None else alauda.default_region,
+                )
+            r = alauda._request_helper(url, 'get')
+            if 200 == r.status_code:
+                ret = []
+                for data in r.json()['services']:
+                    ret.append(cls(alauda, data, True))
+                return ret
+            else:
+                raise '发生了异常：\n{}\n{}'.format(r.status_code, r.text)
+        
+        #获取不在应用中的服务：
+        
+        url = format_url(alauda, region_name, '|', None)
+        url = url.replace('/|/', '/')
         r = alauda._request_helper(url, 'get')
         if 200 == r.status_code:
             ret = []
             for data in r.json()['results']:
-                if app_name == '' and data['application'] is None:
+                if data.get('application'): #公有区不带application参数会返回包括应用内服务的所有服务。在这里将其过滤。
                     continue 
-                ret.append(cls(alauda, data))
+                ret.append(cls(alauda, data, True))
             return ret
         else:
             raise '发生了异常：\n{}\n{}'.format(r.status_code, r.text)
     
     @staticmethod
-    def start_service(alauda, name, app_name):
-        url = format_url(alauda, name, app_name, 'start')
+    def start_service(alauda, name, app_name, region_name = None):
+        url = format_url(alauda, region_name, name, app_name, 'start')
         r = alauda._request_helper(url, 'put')
         if 204 == r.status_code:
             return True
@@ -80,8 +102,8 @@ class Service(APIBase):
             raise '发生了异常：\n{}\n{}'.format(r.status_code, r.text)
             
     @staticmethod
-    def stop_service(alauda, name, app_name):
-        url = format_url(alauda, name, app_name, 'stop')
+    def stop_service(alauda, name, app_name, region_name = None):
+        url = format_url(alauda, region_name, name, app_name, 'stop')
         r = alauda._request_helper(url, 'put')
         if 204 == r.status_code:
             return True
@@ -91,8 +113,8 @@ class Service(APIBase):
             raise '发生了异常：\n{}\n{}'.format(r.status_code, r.text)
             
     @staticmethod
-    def delete_service(alauda, name, app_name):
-        url = format_url(alauda, name, app_name)
+    def delete_service(alauda, name, app_name, region_name = None):
+        url = format_url(alauda, region_name, name, app_name)
         r = alauda._request_helper(url, 'delete')
         if 204 == r.status_code:
             return True
@@ -244,17 +266,32 @@ class Service(APIBase):
         
         return ret
     
-    def __init__(self, alauda, data):
+    def __init__(self, alauda, data, is_simple = False):
         self._alauda = alauda
-        super().__init__(data)
+        super().__init__(data, is_simple)
+        
+    @property
+    def app_name(self):
+        return self._json_data.get('application')
+        
+    @property
+    def region_name(self):
+        region_id = self._json_data.get('region_id')
+        if region_id:
+            return self._alauda.get_region(region_id).name
+        else:
+            return self._json_data['region']['name']
+        
+    def _get_full(self):
+        return self.get_data_by_name(self._alauda, self.name, self.app_name, self.region_name)
     
     def _format_url(self, url = ''):
-        return format_url(self._alauda, self.name, self.app_name, url)
+        return format_url(self._alauda, self.region_name, self.name, self.app_name, url)
         
     @property
     def api_url(self):
         return self._format_url()
-    
+            
     def start(self):
         '启动此服务'
         return self.start_service(self._alauda, self.name, self.app_name)
@@ -286,4 +323,4 @@ class Service(APIBase):
         if self.app_name is None:
             return '<Service [{}] in [{}]>'.format(self.name, self.region_name)
         else:
-            return '<Service [{}] in [{}]>'.format(self.name, self.app_name)
+            return '<Service [{}] of [{}] in [{}]>'.format(self.name, self.app_name, self.region_name)
