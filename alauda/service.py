@@ -1,6 +1,38 @@
-from .apibase import APISimpleDataBase
+from .apibase import APIBase, APISimpleDataBase
 import yaml
 
+
+class EndPoint(APIBase):
+    
+    _aliasmap = {
+    }
+    
+    _hideset = {'protocol'}
+    
+    def __init__(self, data):
+        super().__init__(data)
+        
+    @property
+    def domain(self):
+        return self._json_data.get('customer_domain') or self.default_domain
+        
+    @property
+    def protocol(self):
+        if self.endpoint_type == 'http-endpoint':
+            return 'http'
+        else:
+            return self._json_data['protocol']
+        
+    @property
+    def url(self):
+        if self.endpoint_type == 'http-endpoint' and self.service_port == 80:
+            return 'http://' + self.domain
+            
+        return '{}://{}:{}'.format(self.protocol, self.domain, self.service_port)
+        
+    def __repr__(self):
+        return '<EndPoint {}>'.format(self.url)
+    
 
 def format_url(alauda, region_name, name, app_name, act = ''):
     url = '/v1/services/{namespace}/{name}/{act}?region_name={region_name}'.format(
@@ -50,7 +82,7 @@ class Service(APISimpleDataBase):
             
     @classmethod
     def get(cls, alauda, name, app_name = None, region_name = None):
-        data = cls.get_data_by_name(alauda, name, app_name, region_name)
+        data = cls.get_data(alauda, name, app_name, region_name)
         if data is None:
             return None
         return cls(alauda, data)
@@ -268,7 +300,17 @@ class Service(APISimpleDataBase):
     
     def __init__(self, alauda, data, is_simple = False):
         self._alauda = alauda
+        self._endpoints = None
         super().__init__(data, is_simple)
+        
+    def list_endpoint(self):
+        if not self._endpoints:
+            if 'instance_ports' not in self._json_data:
+                self._update_to_full()
+            self._endpoints = []
+            for data in self._json_data['instance_ports']:
+                self._endpoints.append(EndPoint(data))
+        return self._endpoints
         
     @property
     def app_name(self):
@@ -283,7 +325,7 @@ class Service(APISimpleDataBase):
             return self._json_data['region']['name']
         
     def _get_full(self):
-        return self.get_data_by_name(self._alauda, self.name, self.app_name, self.region_name)
+        return self.get_data(self._alauda, self.name, self.app_name, self.region_name)
     
     def _format_url(self, url = ''):
         return format_url(self._alauda, self.region_name, self.name, self.app_name, url)

@@ -25,6 +25,8 @@ for region in alauda.regions:
     print_(1, region)
     for service in region.list_service():
         print_(2, service)
+        for e in service.list_endpoint():
+            print_(3, e)
     for app in region.list_application():
         print_(2, app)
         for service in app.list_service():

@@ -124,14 +124,17 @@ class APISimpleDataBase(APIBase):
         '实现此方法以获取数据对象的完整版本'
         pass
     
+    def _update_to_full(self):
+        self._json_data = self._get_full()
+        self._is_simple = False
+    
     def __init__(self, data, is_simple = False):
         self._is_simple = is_simple
         super().__init__(data)
         
     def __dir__(self):
         if self._is_simple:
-            self._json_data = self._get_full()
-            self._is_simple = True
+            self._update_to_full()
         return super().__dir__()
     
     def __getattr__(self, attribute):
@@ -139,8 +142,7 @@ class APISimpleDataBase(APIBase):
             try:
                 return super().__getattr__(attribute)
             except AttributeError:
-                self._json_data = self._get_full()
-                self._is_simple = True
+                self._update_to_full()
             
         return super().__getattr__(attribute)
                 
