@@ -102,6 +102,7 @@ class Service(APISimpleDataBase):
             if 200 == r.status_code:
                 ret = []
                 for data in r.json()['services']:
+                    data['application'] = app_name
                     ret.append(cls(alauda, data, True))
                 return ret
             else:

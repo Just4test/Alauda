@@ -68,8 +68,12 @@ class Application(APIBase):
         super().__init__(data)
         
     @property
+    def region(self):
+        return self._alauda.get_region(self.region_id)
+        
+    @property
     def region_name(self):
-        return self._alauda.get_region(self.region_id).name
+        return self.region.name
     
     def _format_url(self, url = ''):
         return '/v1/applications/{namespace}/{name}/{url}?region={region}'.format(
@@ -97,10 +101,13 @@ class Application(APIBase):
             raise Exception('发生了异常：\n{}\n{}'.format(r.status_code, r.text))
             
     def list_service(self):
-        return self._alauda.list_service(self.name)
+        return self.region.list_service(self.name)
         
     def delete_service(self, name):
-        return self._alauda.delete_service(name, self.name)
+        return self.region.delete_service(name, self.name)
+        
+    def get_service(self, name):
+        return self.region.get_service(name, self.name)
             
             
     def start(self):
