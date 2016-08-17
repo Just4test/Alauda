@@ -72,7 +72,7 @@ class Service(APISimpleDataBase):
     @classmethod
     def get_data(cls, alauda, name, app_name = None, region_name = None):
         url = format_url(alauda, region_name, name, app_name)
-        r = alauda._request_helper(url, 'get', debug = True)
+        r = alauda._request_helper(url, 'get')
         if 200 == r.status_code:
             return r.json()
         elif r.status_code in (403, 404):
