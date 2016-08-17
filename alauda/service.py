@@ -72,13 +72,13 @@ class Service(APISimpleDataBase):
     @classmethod
     def get_data(cls, alauda, name, app_name = None, region_name = None):
         url = format_url(alauda, region_name, name, app_name)
-        r = alauda._request_helper(url, 'get')
+        r = alauda._request_helper(url, 'get', debug = True)
         if 200 == r.status_code:
             return r.json()
-        elif r.status_code == 404:
+        elif r.status_code in (403, 404):
             return None
         else:
-            raise '发生了异常：\n{}\n{}'.format(r.status_code, r.text)
+            raise Exception('发生了异常：\n{}\n{}'.format(r.status_code, r.text))
             
     @classmethod
     def get(cls, alauda, name, app_name = None, region_name = None):
@@ -106,7 +106,7 @@ class Service(APISimpleDataBase):
                     ret.append(cls(alauda, data, True))
                 return ret
             else:
-                raise '发生了异常：\n{}\n{}'.format(r.status_code, r.text)
+                raise Exception( '发生了异常：\n{}\n{}'.format(r.status_code, r.text))
         
         #获取不在应用中的服务：
         
@@ -121,7 +121,7 @@ class Service(APISimpleDataBase):
                 ret.append(cls(alauda, data, True))
             return ret
         else:
-            raise '发生了异常：\n{}\n{}'.format(r.status_code, r.text)
+            raise Exception( '发生了异常：\n{}\n{}'.format(r.status_code, r.text))
     
     @staticmethod
     def start_service(alauda, name, app_name, region_name = None):
@@ -132,7 +132,7 @@ class Service(APISimpleDataBase):
         elif 400 == r.status_code:
             return False
         else:
-            raise '发生了异常：\n{}\n{}'.format(r.status_code, r.text)
+            raise Exception( '发生了异常：\n{}\n{}'.format(r.status_code, r.text))
             
     @staticmethod
     def stop_service(alauda, name, app_name, region_name = None):
@@ -143,7 +143,7 @@ class Service(APISimpleDataBase):
         elif 400 == r.status_code:
             return False
         else:
-            raise '发生了异常：\n{}\n{}'.format(r.status_code, r.text)
+            raise Exception( '发生了异常：\n{}\n{}'.format(r.status_code, r.text))
             
     @staticmethod
     def delete_service(alauda, name, app_name, region_name = None):
@@ -152,7 +152,7 @@ class Service(APISimpleDataBase):
         if 204 == r.status_code:
             return True
         else:
-            raise '发生了异常：\n{}\n{}'.format(r.status_code, r.text)
+            raise Exception( '发生了异常：\n{}\n{}'.format(r.status_code, r.text))
             
     
     
@@ -360,7 +360,7 @@ class Service(APISimpleDataBase):
         if 204 == r.status_code:
             return True
         else:
-            raise '发生了异常：\n{}\n{}'.format(r.status_code, r.text)
+            raise Exception( '发生了异常：\n{}\n{}'.format(r.status_code, r.text))
     
     def __repr__(self):
         if self.app_name is None:
