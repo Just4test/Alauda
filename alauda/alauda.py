@@ -12,6 +12,8 @@ class Alauda:
     
     urlbase='https://api.alauda.cn'
     
+    debug = False
+    
     @staticmethod
     def get_token(username, password, urlbase = None):
         '使用用户名和密码获取Token'
@@ -38,7 +40,7 @@ class Alauda:
     def _format_url(self, url):
         return self.urlbase + url.format(namespace = self.namespace)
             
-    def _request_helper(self, url, method, data = None, params = None, headers = None, files = None, debug = False):
+    def _request_helper(self, url, method, data = None, params = None, headers = None, files = None):
         '''
         发送请求，将返回值解为json对象
         args:
@@ -58,7 +60,7 @@ class Alauda:
             headers['Content-Type'] = 'application/json'
             data = json.dumps(data)
             
-        if debug == True:
+        if self.debug == True:
             r = requests.request(method, 'https://echo.luckymarmot.com/' + self._format_url(url),
                 headers = headers, params = params, data = data, files = files);
             filename = str(hash(r))[1:6] + '.html'
