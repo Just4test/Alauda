@@ -13,6 +13,7 @@ if not alauda_token:
 
 print('Login to alauda...')
 alauda = Alauda(alauda_ns, alauda_token, alauda_region)
+alauda.debug = True
 
 def print_(l, *args):
     tab = '  '* l + '├−'

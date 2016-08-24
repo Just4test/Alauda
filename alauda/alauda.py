@@ -1,5 +1,6 @@
 import requests
 import json
+from datetime import datetime
 
 from .region import Region
 from .service import Service
@@ -40,7 +41,7 @@ class Alauda:
     def _format_url(self, url):
         return self.urlbase + url.format(namespace = self.namespace)
             
-    def _request_helper(self, url, method, data = None, params = None, headers = None, files = None):
+    def _request_helper(self, url, method, data = None, params = None, headers = None, files = None, debug = False):
         '''
         发送请求，将返回值解为json对象
         args:
@@ -60,10 +61,10 @@ class Alauda:
             headers['Content-Type'] = 'application/json'
             data = json.dumps(data)
             
-        if self.debug == True:
+        if debug or self.debug:
             r = requests.request(method, 'https://echo.luckymarmot.com/' + self._format_url(url),
                 headers = headers, params = params, data = data, files = files);
-            filename = str(hash(r))[1:6] + '.html'
+            filename = datetime.now().strftime('%Y-%m-%d %H_%M_%S.%f') + '.html'
             open(filename, 'w').write(r.text)
             print('请求写入了文件：', filename)
             
