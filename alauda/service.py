@@ -309,7 +309,7 @@ class Service(APISimpleDataBase):
             if 'instance_ports' not in self._json_data:
                 self._update_to_full()
             self._endpoints = []
-            for data in self._json_data['instance_ports']:
+            for data in self._json_data.get('instance_ports', []):
                 self._endpoints.append(EndPoint(data))
         return self._endpoints
         

@@ -125,6 +125,8 @@ class APISimpleDataBase(APIBase):
         pass
     
     def _update_to_full(self):
+        if not self._is_simple:
+            return
         self._json_data = self._get_full()
         self._is_simple = False
     
