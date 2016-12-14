@@ -306,11 +306,15 @@ class Service(APISimpleDataBase):
         
     def list_endpoint(self):
         if not self._endpoints:
-            if 'instance_ports' not in self._json_data:
-                self._update_to_full()
             self._endpoints = []
-            for data in self._json_data.get('instance_ports', []):
-                self._endpoints.append(EndPoint(data))
+            if 'alauda_load_balancer' in self._json_data:
+                for data in self._json_data['alauda_load_balancer'].get('endpoints', []):
+                    self._endpoints.append(EndPoint(data))
+            else:
+                if 'instance_ports' not in self._json_data:
+                    self._update_to_full()
+                for data in self._json_data.get('instance_ports', []):
+                    self._endpoints.append(EndPoint(data))
         return self._endpoints
         
     @property
