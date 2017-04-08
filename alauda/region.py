@@ -2,6 +2,15 @@ from .apibase import APIBase
 from .service import Service
 from .application import Application
 
+
+class Node(APIBase):
+        
+    def __repr__(self):
+        if 'total_cpus' in self.resources:
+            return '<Node {}: {} ({}core/{})>'.format(self.type, self.private_ip, self.resources['total_cpus'], self.resources['total_mem'])
+        else:
+            return '<Node {}: {}>'.format(self.type, self.private_ip)
+            
 class Region(APIBase):
     '''
     可用区
@@ -36,6 +45,17 @@ class Region(APIBase):
         
     def __repr__(self):
         return '<Region {}:{} [{}]>'.format(self.name, self.display_name, self.id)
+        
+    def list_node(self):
+        url = '/v1/regions/{{namespace}}/{region_name}/nodes'.format(region_name = self.name)
+        r = self._alauda._request_helper(url, 'get')
+        if 200 == r.status_code:
+            ret = []
+            for data in r.json():
+                ret.append(Node(data))
+            return ret
+        else:
+            raise Exception( '发生了异常：\n{}\n{}'.format(r.status_code, r.text))
         
     def create_service(self, config):
         return Service.create(self._alauda, config)

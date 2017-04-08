@@ -13,7 +13,7 @@ if not alauda_token:
 
 print('Login to alauda...')
 alauda = Alauda(alauda_ns, alauda_token, alauda_region)
-alauda.debug = True
+# alauda.debug = True
 
 def print_(l, *args):
     tab = '  '* l + '├−'
@@ -24,6 +24,8 @@ print('Show All Service...')
 print(alauda)
 for region in alauda.regions:
     print_(1, region)
+    for node in region.list_node():
+        print_(2, node)
     for service in region.list_service():
         print_(2, service)
         for e in service.list_endpoint():

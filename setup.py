@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'just4alauda',
-    version = '0.2.10',
+    version = '0.2.11',
     keywords = ('alauda', 'api'),
     description = 'An simple python API for alauda.cn and alauda.io',
     url = 'https://github.com/Just4test/Alauda',
