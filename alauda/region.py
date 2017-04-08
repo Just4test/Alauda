@@ -10,6 +10,10 @@ class Node(APIBase):
             return '<Node {}: {} ({}core/{})>'.format(self.type, self.private_ip, self.resources['total_cpus'], self.resources['total_mem'])
         else:
             return '<Node {}: {}>'.format(self.type, self.private_ip)
+    
+    @property
+    def is_slave(self):
+        return self.type == 'SLAVE'
             
 class Region(APIBase):
     '''
