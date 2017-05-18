@@ -55,7 +55,7 @@ class APIBase(object):
         if attribute not in self._hideset and attribute in self._json_data:
             return self._json_data[attribute]
         else:
-            print(('发生错误', attribute, self._json_data))
+            print('发生错误', attribute, self._json_data)
             raise AttributeError(attribute)
     
     def __dir__(self):
@@ -79,7 +79,7 @@ class APIBase(object):
             datakeys = set(self._json_data.keys())
             temp =  datakeys - self._hideset
             # 添加属性别名
-            temp |= {k for k, v in list(self._aliasmap.items()) if _in(v)} 
+            temp |= {k for k, v in self._aliasmap.items() if _in(v)} 
             temp |= set(super().__dir__())
             self.__dir_cache__ = list(temp)
         return self.__dir_cache__

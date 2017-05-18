@@ -17,7 +17,7 @@ alauda = Alauda(alauda_ns, alauda_token, alauda_region)
 
 def print_(l, *args):
     tab = '  '* l + '├−'
-    print((tab, *args))
+    print(tab, *args)
     
 print('Show All Service...')
 
@@ -44,7 +44,7 @@ REPO_NAME = 'test-nginx'
 
 repo = alauda.get_repo(REPO_NAME)
 if repo:
-    print(('Repo already exist {}. delete...'.format(repo)))
+    print('Repo already exist {}. delete...'.format(repo))
     repo.delete()
 
 tag_config = TagConfig.create('latest', 'master', build_context_path = BUILD_CONTEXT_PATH)
@@ -53,7 +53,7 @@ print('Create repo...')
 repo = alauda.create_repo(REPO_NAME, 'Just for test alauda API', build_config = build_config)
 print(repo)
 print('Build...')
-print((repo.build()))
+print(repo.build())
 
 # Create service
 yaml_str = '''

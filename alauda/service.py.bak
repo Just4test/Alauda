@@ -175,7 +175,7 @@ class Service(APISimpleDataBase):
             region_name = alauda.default_region
         
         ret = []
-        for (service_name,service_data) in list(yml.items()):
+        for (service_name,service_data) in yml.items():
             json = {
                 'service_name':service_name,
                 'namespace': alauda.namespace,
@@ -289,13 +289,13 @@ class Service(APISimpleDataBase):
                         else:
                             json['instance_envvars'][env[0]] = env[1]
                 else:
-                    for (k, v) in list(envs.items()):
+                    for (k, v) in envs.items():
                         json['instance_envvars'][k] = v
                         
                 del service_data['environment']
                 
-            if len(list(service_data.items())) > 0:
-                print(('无法处理的参数:\n{}'.format(service_data)))
+            if len(service_data.items()) > 0:
+                print('无法处理的参数:\n{}'.format(service_data))
         
         return ret
     

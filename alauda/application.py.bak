@@ -60,7 +60,7 @@ class Application(APIBase):
                 ret.append(cls(alauda, data))
             return ret
         else:
-            print((url, params))
+            print(url, params)
             raise Exception('发生了异常：\n{}\n{}'.format(r.status_code, r.text))
     
     def __init__(self, alauda, data):
