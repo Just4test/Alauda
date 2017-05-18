@@ -36,7 +36,7 @@ class Alauda:
         if 200 == r.status_code:
             return result['token']
         else:
-            print(('错误，可能是用户名和密码不匹配' + r.text))
+            print('错误，可能是用户名和密码不匹配' + r.text)
             
     def _format_url(self, url):
         return self.urlbase + url.format(namespace = self.namespace)
@@ -66,7 +66,7 @@ class Alauda:
                 headers = headers, params = params, data = data, files = files);
             filename = datetime.now().strftime('%Y-%m-%d %H_%M_%S.%f') + '.html'
             open(filename, 'w').write(r.text)
-            print(('请求写入了文件：', filename))
+            print('请求写入了文件：', filename)
             
         # print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
         # print(method, self._format_url(url))
@@ -96,7 +96,7 @@ class Alauda:
         if 200 == r.status_code:
             result = r.json()
             if result.get('is_available') is True:
-                print(('连接成功。上次API使用时间：{}'.format(result.get('api_revoked'))))
+                print('连接成功。上次API使用时间：{}'.format(result.get('api_revoked')))
             else:
                 raise Exception('账户尚未激活')
         else:
